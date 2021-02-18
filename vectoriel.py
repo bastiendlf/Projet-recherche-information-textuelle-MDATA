@@ -35,7 +35,8 @@ class Vectoriel:
         if word not in self.vocabulary:
             raise Exception(f"Impossible to compute IDF because '{word}', not in corpus vocab")
         df_t = 0
-        for document in self.corpus_tokenized:
+        for element in self.corpus_tokenized:
+            document = element['document']
             if word in document:
                 df_t += 1
         return np.log(len(self.corpus_tokenized) / df_t)
@@ -67,13 +68,13 @@ class Vectoriel:
     def index_construction(self, corpus_tokenized, tf_idf=True):
         """
         Builds linear index.
-        :param corpus_tokenized: List of documents (one document is a bag of words)
+        :param corpus_tokenized: list of dictionaries [{'document': bagwords, 'id':id}, ...]
         :param tf_idf: tf_idf: boolean True to compute idf else False
-        :return: dict{"document_id" : descripteur_ensembliste_document(document)}
+        :return: dict{document_id : descripteur_ensembliste_document(document)}
         """
         result = dict()
-        for i, document in enumerate(corpus_tokenized):
-            result[i] = self.descripteur_ensembliste_document(document, tf_idf)
+        for element in corpus_tokenized:
+            result[element['id']] = self.descripteur_ensembliste_document(element['document'], tf_idf)
         self.index = result
         return result
 
@@ -99,7 +100,7 @@ class Vectoriel:
         """
         Builds inverse index.
         :param tf_idf: boolean default True
-        :param corpus_tokenized: list of documents, each document must be bag words dict {"word" : frequency}
+        :param corpus_tokenized: list of dictionaries [{'document': bagwords, 'id':id}, ...]
         :return: inverted index -> dictionary {"descriptors" : lists of lists -> each list is a document
                                                         each sublist contains all unique words in corresponding document
                                                 "inverted" : dictionary {"word" : list[ids of documents containing word]
@@ -111,7 +112,10 @@ class Vectoriel:
         for mot in self.vocabulary:
             index_inverted[mot] = []
 
-        for d_id, document in enumerate(corpus_tokenized):
+        for element in corpus_tokenized:
+            d_id = element['id']
+            document = element['document']
+
             bow = self.descripteur_ensembliste_document(document, tf_idf)
             index_descriptors[d_id] = bow
             for word in bow:
