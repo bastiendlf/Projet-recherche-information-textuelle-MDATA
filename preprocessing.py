@@ -2,20 +2,39 @@ from src.tokenizer import Tokenizer, REGEX_SPECIAL_CHARACTERS
 from nltk.stem import SnowballStemmer
 
 
+# def preprocess_corpus_old(corpus, stop_list, stop_words=True, stemm=True, bag_words=True):
+#     """
+#     Preprocess all documents in a corpus.
+#     :param corpus: list of documents (a document is a dict {"text" : "content of document"})
+#     :param stop_list: array of stop words to remove from documents
+#     :param stop_words: boolean True to remove them False otherwise
+#     :param stemm: boolean True to stemm words False otherwise
+#     :param bag_words: boolean True to turn documents into bagwords False otherwise
+#     :return: list of documents preprocessed
+#     """
+#     corpus_preprocessed = list()
+#     for element in corpus:
+#         document = preprocess_document(element['text'], stop_list, stop_words, stemm, bag_words)
+#         corpus_preprocessed.append(document)
+#
+#     return corpus_preprocessed
+
 def preprocess_corpus(corpus, stop_list, stop_words=True, stemm=True, bag_words=True):
     """
     Preprocess all documents in a corpus.
-    :param corpus: list of documents (a document is a dict {"text" : "content of document"})
+    :param corpus: list of documents (a document is a dict {"text" : "content of document", "id": id})
     :param stop_list: array of stop words to remove from documents
     :param stop_words: boolean True to remove them False otherwise
     :param stemm: boolean True to stemm words False otherwise
     :param bag_words: boolean True to turn documents into bagwords False otherwise
-    :return: list of documents preprocessed
+    :return: list of dictionaries [{'document': bagwords, 'id':id}, ...]
     """
     corpus_preprocessed = list()
     for element in corpus:
-        document = preprocess_document(element['text'], stop_list, stop_words, stemm, bag_words)
-        corpus_preprocessed.append(document)
+        new_element = dict()
+        new_element['document'] = preprocess_document(element['text'], stop_list, stop_words, stemm, bag_words)
+        new_element['id'] = element['id']
+        corpus_preprocessed.append(new_element)
 
     return corpus_preprocessed
 
@@ -77,11 +96,12 @@ def make_bag_words(document_tokenized):
 def vocabulary(corpus_tokenized):
     """
     Get a list of each unique word in the whole corpus.
-    :param corpus_tokenized: list of bagwords
+    :param corpus_tokenized: list of dictionaries [{'document': bagwords, 'id':id}, ...]
     :return: a list of each unique token in the whole corpus
     """
     vocab = list()
-    for document in corpus_tokenized:
+    for element in corpus_tokenized:
+        document = element['document']
         for word in document:
             if word not in vocab:
                 vocab.append(word)

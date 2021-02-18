@@ -58,15 +58,27 @@ class Ensembliste:
     def mesure_sym_norm(self, D, Q):
         return 1 - self.mesure_dice(D, Q)
 
+    # def index_construction_old(self, corpus_tokenized):
+    #     """
+    #     Builds linear index.
+    #     :param corpus_tokenized: List of documents (one document is a bag of words)
+    #     :return: dict{"document_id" : descripteur_ensembliste_document(document)}
+    #     """
+    #     result = dict()
+    #     for i, document in enumerate(corpus_tokenized):
+    #         result[i] = self.descripteur_ensembliste_document(document)
+    #     self.index = result
+    #     return result
+
     def index_construction(self, corpus_tokenized):
         """
         Builds linear index.
-        :param corpus_tokenized: List of documents (one document is a bag of words)
-        :return: dict{"document_id" : descripteur_ensembliste_document(document)}
+        :param corpus_tokenized: list of dictionaries [{'document': bagwords, 'id':id}, ...]
+        :return: dict{document_id : descripteur_ensembliste_document(document)}
         """
         result = dict()
-        for i, document in enumerate(corpus_tokenized):
-            result[i] = self.descripteur_ensembliste_document(document)
+        for element in corpus_tokenized:
+            result[element['id']] = self.descripteur_ensembliste_document(element['document'])
         self.index = result
         return result
 
@@ -88,7 +100,7 @@ class Ensembliste:
     def inverted_index_construction(self, corpus_tokenized):
         """
         Builds inverted index.
-        :param corpus_tokenized: list of documents, each document must be bag words dict {"word" : frequency}
+        :param corpus_tokenized: list of dictionaries [{'document': bagwords, 'id':id}, ...]
         :return: inverted index -> dictionary {"descriptors" : lists of lists -> each list is a document
                                                         each sublist contains all unique words in corresponding document
                                                 "inverted" : dictionary {"word" : list[ids of documents containing word]
@@ -101,7 +113,10 @@ class Ensembliste:
         for mot in vocab:
             index_inverted[mot] = []
 
-        for d_id, document in enumerate(corpus_tokenized):
+        for element in corpus_tokenized:
+            document = element['document']
+            d_id = element['id']
+
             bow = self.descripteur_ensembliste_document(document)
             index_descriptors[d_id] = bow
             for word in bow:
